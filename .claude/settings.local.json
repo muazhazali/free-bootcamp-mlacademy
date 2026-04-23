@@ -5,7 +5,8 @@
       "WebFetch(domain:github.com)",
       "Bash(claude plugin *)",
       "Bash(rtk tree *)",
-      "Bash(rtk ls *)"
+      "Bash(rtk ls *)",
+      "WebSearch"
     ]
   }
 }
