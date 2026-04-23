@@ -3,7 +3,9 @@
     "allow": [
       "Bash(gh repo *)",
       "WebFetch(domain:github.com)",
-      "Bash(claude plugin *)"
+      "Bash(claude plugin *)",
+      "Bash(rtk tree *)",
+      "Bash(rtk ls *)"
     ]
   }
 }
