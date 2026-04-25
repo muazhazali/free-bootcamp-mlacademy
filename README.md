@@ -27,13 +27,65 @@ To install them, run:
 pip install -r requirements.txt
 ```
 
-## How to run your Kedro pipeline
+## How to run this app locally
 
-You can run your Kedro project with:
+There are two main ways to run this application locally: using Docker Compose (recommended) or manually using your local Python environment.
 
+### Option 1: Using Docker Compose (Recommended)
+
+This method orchestrates the training, inference, and UI services automatically.
+
+1. Ensure you have Docker and Docker Compose installed and running on your machine.
+2. Open a terminal in the root of the project directory.
+3. Run the following command:
+
+```bash
+docker compose up --build
 ```
-kedro run
+
+4. The compose file will sequentially run:
+   - `ml-train`: Trains the model.
+   - `ml-inference`: Runs the inference pipeline.
+   - `app-ui`: Starts the Dash web interface.
+5. Once the `app-ui` service is running, open your browser and navigate to http://localhost:8050 to view the real-time bike count predictions.
+
+### Option 2: Running Manually (Local Environment)
+
+If you prefer to run the scripts manually without Docker, you can use the provided entrypoint scripts. We use `uv` for package management.
+
+1. Install dependencies using `uv`:
+
+```bash
+uv sync
 ```
+
+2. Activate the virtual environment:
+
+**Windows (PowerShell):**
+```powershell
+.venv\Scripts\activate
+```
+**macOS/Linux:**
+```bash
+source .venv/bin/activate
+```
+
+3. **Train the model**: Run the training entrypoint to generate the models.
+```bash
+python entrypoints/training.py
+```
+
+4. **Run the inference**: Run the inference script in a separate terminal.
+```bash
+python entrypoints/inference.py
+```
+
+5. **Start the UI App**: Run the app UI in another terminal.
+```bash
+python entrypoints/app_ui.py
+```
+
+6. Open your browser and navigate to http://localhost:8050.
 
 ## How to test your Kedro project
 

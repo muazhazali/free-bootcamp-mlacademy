@@ -25,12 +25,6 @@ def run_inference() -> None:
 
     runner_config = params["pipeline_runner"]
 
-    # Clear predictions file to start fresh
-    predictions_path = project_path / catalog["predictions_with_timestamps"]["filepath"]
-    if predictions_path.exists():
-        predictions_path.unlink()
-        print("Cleared previous predictions")
-
     # Load inference data from catalog
     inference_data_path = project_path / catalog["inference_data"]["filepath"]
     data = pd.read_parquet(inference_data_path)
@@ -46,30 +40,37 @@ def run_inference() -> None:
     # Find first index matching the start timestamp
     first_idx = data[data["datetime"] >= first_timestamp].index[0]
 
-    print(f"Starting inference: {num_steps} steps, batch_size={batch_size}")
+    while True:
+        # Clear predictions file to start fresh
+        predictions_path = project_path / catalog["predictions_with_timestamps"]["filepath"]
+        if predictions_path.exists():
+            predictions_path.unlink()
+            print("Cleared previous predictions")
 
-    for step in range(num_steps):
-        current_idx = first_idx + step
-        batch_start = max(0, current_idx - batch_size + 1)
-        batch_end = current_idx + 1
+        print(f"Starting inference: {num_steps} steps, batch_size={batch_size}")
 
-        batch = data.iloc[batch_start:batch_end].copy()
+        for step in range(num_steps):
+            current_idx = first_idx + step
+            batch_start = max(0, current_idx - batch_size + 1)
+            batch_end = current_idx + 1
 
-        # Save batch to catalog location
-        batch_path = project_path / catalog["inference_batch"]["filepath"]
-        batch_path.parent.mkdir(parents=True, exist_ok=True)
-        batch.to_parquet(batch_path, index=False)
+            batch = data.iloc[batch_start:batch_end].copy()
 
-        # Run pipeline
-        with KedroSession.create(project_path=project_path) as session:
-            session.run(pipeline_name="inference")
+            # Save batch to catalog location
+            batch_path = project_path / catalog["inference_batch"]["filepath"]
+            batch_path.parent.mkdir(parents=True, exist_ok=True)
+            batch.to_parquet(batch_path, index=False)
 
-        print(f"[{step + 1}/{num_steps}] Prediction saved")
+            # Run pipeline
+            with KedroSession.create(project_path=project_path) as session:
+                session.run(pipeline_name="inference")
 
-        if step < num_steps - 1:
-            time.sleep(interval_seconds)
+            print(f"[{step + 1}/{num_steps}] Prediction saved")
 
-    print("Inference loop completed!")
+            if step < num_steps - 1:
+                time.sleep(interval_seconds)
+
+        print("Inference loop completed! Restarting...")
 
 if __name__ == "__main__":
     run_inference()
